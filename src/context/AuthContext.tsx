@@ -1,23 +1,14 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode'; // Import jwtDecode
 import { apiGetUserDetails } from '../services/api'; // Import apiGetUserDetails
+// Import types from the types file
+import type { UserDetails, DecodedToken } from '../types';
 
-// Define the expected structure of the decoded JWT payload
-interface DecodedToken {
-  sub: string; // Subject (user ID)
-  exp: number; // Expiration time
-  // Add other claims if needed (e.g., username, roles)
-}
+// Remove local UserDetails definition
+// interface UserDetails { ... }
 
-// Define the structure for user details from the API
-interface UserDetails {
-  userID: string;
-  name: string;
-  createdAt?: string; // Optional fields
-  createdBy?: string;
-  lastUpdatedAt?: string;
-  lastUpdatedBy?: string;
-}
+// Remove local DecodedToken definition if it was moved (assuming it was)
+// interface DecodedToken { ... }
 
 interface AuthContextType {
   token: string | null;

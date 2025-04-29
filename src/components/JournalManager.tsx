@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-// Import Journal type and apiGetJournals
-import { Journal, Transaction, apiGetJournals } from '../services/api';
+// Import types from types, API functions from services
+import { apiGetJournals } from '../services/api';
+import type { Journal, Transaction } from '../types';
 
-// Remove local interface definitions (use imported ones)
-// interface Transaction { ... }
-// interface Journal { ... }
+// Remove import of types from services if they existed
+// import { Journal, Transaction, apiGetJournals } from '../services/api';
 
 const JournalManager: React.FC = () => {
   const { token, selectedWorkplaceId } = useAuth();

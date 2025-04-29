@@ -1,35 +1,14 @@
 // src/services/api.ts
 
-// Export type definitions
-export interface LoginCredentials {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-}
-
-export interface UserDetails {
-  userID: string;
-  name: string;
-  // ... other fields
-}
-
-export interface Workplace {
-  workplaceID: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  createdBy: string;
-  lastUpdatedAt: string;
-  lastUpdatedBy: string;
-}
-
-export interface CreateWorkplacePayload {
-  name: string;
-  description?: string;
-}
+// Import necessary types from the types file
+import type {
+  LoginCredentials,
+  LoginResponse,
+  UserDetails,
+  Workplace,
+  CreateWorkplacePayload,
+  Journal
+} from '../types';
 
 // Export Transaction interface
 export interface Transaction {
@@ -42,19 +21,6 @@ export interface Transaction {
   notes: string;
   createdAt: string;
   createdBy: string;
-}
-
-export interface Journal {
-  journalID: string;
-  workplaceID: string;
-  date: string;
-  description: string;
-  currencyCode: string;
-  transactions: Transaction[]; // Now uses the exported Transaction type
-  createdAt: string;
-  createdBy: string;
-  lastUpdatedAt: string;
-  lastUpdatedBy: string;
 }
 
 // --- API Service --- 

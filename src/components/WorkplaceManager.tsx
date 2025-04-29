@@ -1,7 +1,8 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
-// Import Workplace type along with API functions
-import { apiGetWorkplaces, apiCreateWorkplace, Workplace } from '../services/api';
+// Import Workplace type from types, API functions from services
+import { apiGetWorkplaces, apiCreateWorkplace } from '../services/api';
+import type { Workplace } from '../types';
 
 const WorkplaceManager: React.FC = () => {
   // Get selected workplace state and setter from context
