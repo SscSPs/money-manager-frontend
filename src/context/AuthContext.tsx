@@ -10,22 +10,28 @@ import type { UserDetails, DecodedToken } from '../types';
 // Remove local DecodedToken definition if it was moved (assuming it was)
 // interface DecodedToken { ... }
 
+// Simplified type for storing selected workplace
+interface SelectedWorkplaceInfo {
+  id: string;
+  name: string;
+}
+
 interface AuthContextType {
   token: string | null;
-  userId: string | null; // Add userId state
-  userName: string | null; // Add userName state
-  isLoading: boolean; // Add loading state for user details fetch
-  selectedWorkplaceId: string | null; // Add selectedWorkplaceId state
+  userId: string | null;
+  userName: string | null;
+  isLoading: boolean;
+  selectedWorkplace: SelectedWorkplaceInfo | null; // Store object instead of just ID
   login: (token: string) => void;
   logout: () => void;
-  setSelectedWorkplace: (workplaceId: string) => void; // Add function to set workplace
+  setSelectedWorkplace: (workplace: SelectedWorkplaceInfo | null) => void; // Update signature
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Key for localStorage
 const AUTH_TOKEN_KEY = 'authToken';
-const SELECTED_WORKPLACE_KEY = 'selectedWorkplaceId';
+const SELECTED_WORKPLACE_KEY = 'selectedWorkplace'; // Changed key name
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -52,15 +58,30 @@ const getUserIdFromToken = (token: string | null): string | null => {
   }
 };
 
+// Helper to load selected workplace from storage
+const loadSelectedWorkplace = (): SelectedWorkplaceInfo | null => {
+  const stored = localStorage.getItem(SELECTED_WORKPLACE_KEY);
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Failed to parse stored workplace', e);
+      localStorage.removeItem(SELECTED_WORKPLACE_KEY); // Clear invalid data
+      return null;
+    }
+  }
+  return null;
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem(AUTH_TOKEN_KEY));
   // Initialize userId based on token from localStorage
   const [userId, setUserId] = useState<string | null>(() => getUserIdFromToken(token));
   const [userName, setUserName] = useState<string | null>(null); // State for user name
   const [isLoading, setIsLoading] = useState<boolean>(true); // Loading state
-  // Load selected workplace from localStorage on initial load
-  const [selectedWorkplaceId, setSelectedWorkplaceIdState] = useState<string | null>(
-    localStorage.getItem(SELECTED_WORKPLACE_KEY)
+  // Load selected workplace object from localStorage
+  const [selectedWorkplace, setSelectedWorkplaceState] = useState<SelectedWorkplaceInfo | null>(
+    loadSelectedWorkplace
   );
 
   // Effect to fetch user details when userId is available and valid
@@ -90,7 +111,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
              localStorage.removeItem(AUTH_TOKEN_KEY);
              localStorage.removeItem(SELECTED_WORKPLACE_KEY);
              setToken(null); // This will trigger re-render
-             setSelectedWorkplaceIdState(null);
+             setSelectedWorkplaceState(null);
              setUserId(null);
           }
         } finally {
@@ -115,16 +136,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(SELECTED_WORKPLACE_KEY);
     setToken(null);
-    setSelectedWorkplaceIdState(null);
+    setSelectedWorkplaceState(null);
     setUserId(null); // Explicitly clear userId here too
     setUserName(null);
     // No need to set isLoading here, useEffect handles it when token becomes null
   };
 
-  // Function to set and persist selected workplace
-  const setSelectedWorkplace = (workplaceId: string) => {
-    localStorage.setItem(SELECTED_WORKPLACE_KEY, workplaceId);
-    setSelectedWorkplaceIdState(workplaceId);
+  // Updated function to set and persist selected workplace object
+  const setSelectedWorkplace = (workplace: SelectedWorkplaceInfo | null) => {
+    if (workplace) {
+      localStorage.setItem(SELECTED_WORKPLACE_KEY, JSON.stringify(workplace));
+      setSelectedWorkplaceState(workplace);
+    } else {
+      localStorage.removeItem(SELECTED_WORKPLACE_KEY);
+      setSelectedWorkplaceState(null);
+    }
   };
 
   return (
@@ -135,7 +161,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userId,
         userName,
         isLoading,
-        selectedWorkplaceId,
+        selectedWorkplace, // Provide the object
         login,
         logout,
         setSelectedWorkplace,

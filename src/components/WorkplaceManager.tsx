@@ -5,8 +5,8 @@ import { apiGetWorkplaces, apiCreateWorkplace } from '../services/api';
 import type { Workplace } from '../types';
 
 const WorkplaceManager: React.FC = () => {
-  // Get selected workplace state and setter from context
-  const { token, selectedWorkplaceId, setSelectedWorkplace } = useAuth();
+  // Use selectedWorkplace (object) from context now
+  const { token, selectedWorkplace, setSelectedWorkplace } = useAuth();
   // Use the imported Workplace type for state
   const [workplaces, setWorkplaces] = useState<Workplace[]>([]);
   const [newWorkplaceName, setNewWorkplaceName] = useState('');
@@ -26,18 +26,14 @@ const WorkplaceManager: React.FC = () => {
       const data = await apiGetWorkplaces(token);
       setWorkplaces(data.workplaces || []);
 
-      // Auto-select if only one workplace exists and none is selected
-      // Or if the currently selected one is no longer in the list
+      // Update logic to check selectedWorkplace.id
       const currentWorkplaces = data.workplaces || [];
       if (
         currentWorkplaces.length > 0 &&
-        (!selectedWorkplaceId || !currentWorkplaces.some(wp => wp.workplaceID === selectedWorkplaceId))
+        (!selectedWorkplace || !currentWorkplaces.some(wp => wp.workplaceID === selectedWorkplace.id))
       ) {
-         // If only one, select it automatically. Otherwise, don't auto-select.
-         // For now, let's require manual selection or handle it on Home page.
-         // console.log("Considering auto-selection...");
-         // If you want to auto-select the first one:
-         // setSelectedWorkplace(currentWorkplaces[0].workplaceID);
+         // console.log("Selected workplace not in list or none selected");
+         // Potential auto-select logic here if desired
       }
 
     } catch (err: any) {
@@ -63,7 +59,11 @@ const WorkplaceManager: React.FC = () => {
       );
       setNewWorkplaceName('');
       setNewWorkplaceDescription('');
-      setSelectedWorkplace(createdWorkplace.workplaceID);
+      // Pass the object { id, name } to setSelectedWorkplace
+      setSelectedWorkplace({
+        id: createdWorkplace.workplaceID,
+        name: createdWorkplace.name,
+      });
       fetchWorkplaces(); // Refresh list after successful creation
     } catch (err: any) {
       console.error('Create workplace error:', err);
@@ -76,7 +76,9 @@ const WorkplaceManager: React.FC = () => {
   // Fetch workplaces on component mount or when token changes
   useEffect(() => {
     fetchWorkplaces();
-  }, [token]);
+    // Dependency on selectedWorkplace added if we want fetchWorkplaces
+    // to potentially clear selection if the selected one disappears
+  }, [token, selectedWorkplace?.id]); // Re-run if token or selected ID changes
 
   return (
     <div>
@@ -124,15 +126,15 @@ const WorkplaceManager: React.FC = () => {
             <li key={wp.workplaceID} style={{ border: '1px solid #eee', marginBottom: '10px', padding: '10px' }}>
               <div>
                 <strong>{wp.name}</strong>
-                {selectedWorkplaceId === wp.workplaceID && <span style={{ marginLeft: '10px', fontWeight: 'bold', color: 'green' }}>(Selected)</span>}
+                {selectedWorkplace?.id === wp.workplaceID && <span style={{ marginLeft: '10px', fontWeight: 'bold', color: 'green' }}>(Selected)</span>}
               </div>
               <div style={{ fontSize: '0.9em', color: '#555' }}>{wp.description}</div>
               <div style={{ fontSize: '0.8em', color: '#888' }}>ID: {wp.workplaceID}</div>
-              {selectedWorkplaceId !== wp.workplaceID && (
+              {selectedWorkplace?.id !== wp.workplaceID && (
                 <button
-                  onClick={() => setSelectedWorkplace(wp.workplaceID)}
+                  onClick={() => setSelectedWorkplace({ id: wp.workplaceID, name: wp.name })}
                   style={{ marginTop: '5px' }}
-                  disabled={isCreating} // Disable select while creating
+                  disabled={isCreating}
                 >
                   Select
                 </button>
