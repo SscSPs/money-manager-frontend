@@ -1,34 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import Login from './components/Login'
+import Home from './components/Home'
+import { useAuth } from './context/AuthContext'
+
+// Remove ProtectedRoute - Home will handle auth check internally
+// const ProtectedRoute = () => {
+//   const { token } = useAuth();
+//   return token ? <Outlet /> : <Navigate to="/login" replace />;
+// };
+
+// Keep PublicRoute for /login to redirect if already logged in
+const PublicRoute = () => {
+  const { token } = useAuth();
+  return !token ? <Outlet /> : <Navigate to="/" replace />;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="App">
+      <h1>Money Manager</h1> {/* Add a general title */}
+      <Routes>
+        {/* Public Route: /login - Redirects to / if logged in */}
+        <Route path="/login" element={<PublicRoute />}>
+          <Route index element={<Login />} />
+        </Route>
+
+        {/* Main Route: / - Renders Home which handles auth state */}
+        <Route path="/" element={<Home />} />
+
+        {/* Optional: Add a 404 Not Found route */}
+        {/* <Route path="*" element={<div>404 Not Found</div>} /> */}
+      </Routes>
+    </div>
   )
 }
 
