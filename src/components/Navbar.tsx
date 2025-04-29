@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Modal from './Modal';
+import WorkplaceSelectorModal from './WorkplaceSelectorModal';
 
 const Navbar: React.FC = () => {
   const { token, userName, selectedWorkplace, logout, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [isWorkplaceModalOpen, setIsWorkplaceModalOpen] = useState(false);
 
   // Add console log for debugging
   console.log('Navbar rendering, selectedWorkplace:', selectedWorkplace);
@@ -50,6 +53,13 @@ const Navbar: React.FC = () => {
      transition: 'border-color 0.25s',
   };
 
+  const triggerButtonStyle: React.CSSProperties = {
+    ...buttonStyle,
+    padding: '0.4em 0.8em',
+    fontSize: '0.9em',
+    marginRight: '15px',
+  };
+
   const userInfoStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -57,35 +67,48 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav style={navStyle}>
-      <div>
-        <Link to="/" style={linkStyle}>Money Manager</Link>
-        {/* Add other general navigation links here if needed */}
-      </div>
-      <div style={userInfoStyle}>
-        {isLoading ? (
-          <span>Loading...</span>
-        ) : token ? (
-          // Logged-in view
-          <>
-            {userName && <span>Welcome, {userName}</span>}
-            {selectedWorkplace && (
-              <span style={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.6)' }}>
-                | Workplace: {selectedWorkplace.name}
-              </span>
-            )}
-            {/* Link to switch workplace */}
-            <Link to="/workplaces" style={linkStyle}>Workplaces</Link>
-            <button onClick={handleLogout} style={buttonStyle}>Logout</button>
-          </>
-        ) : (
-          // Logged-out view
-          <Link to="/login" style={{ ...linkStyle, marginRight: 0 }}>
-            <button style={buttonStyle}>Login</button>
-          </Link>
-        )}
-      </div>
-    </nav>
+    <>
+      <nav style={navStyle}>
+        <div>
+          <Link to="/" style={linkStyle}>Money Manager</Link>
+          {/* Add other general navigation links here if needed */}
+        </div>
+        <div style={userInfoStyle}>
+          {isLoading ? (
+            <span>Loading...</span>
+          ) : token ? (
+            // Logged-in view
+            <>
+              {userName && <span>Welcome, {userName}</span>}
+              {selectedWorkplace && (
+                <span style={{ fontStyle: 'italic', color: 'rgba(255, 255, 255, 0.6)' }}>
+                  | Workplace: {selectedWorkplace.name}
+                </span>
+              )}
+              {/* Button to open modal instead of Link */}
+              <button onClick={() => setIsWorkplaceModalOpen(true)} style={triggerButtonStyle}>
+                Change Workplace
+              </button>
+              <button onClick={handleLogout} style={buttonStyle}>Logout</button>
+            </>
+          ) : (
+            // Logged-out view
+            <Link to="/login" style={{ ...linkStyle, marginRight: 0 }}>
+              <button style={buttonStyle}>Login</button>
+            </Link>
+          )}
+        </div>
+      </nav>
+
+      {/* Render the Modal outside the nav */}
+      <Modal
+        isOpen={isWorkplaceModalOpen}
+        onClose={() => setIsWorkplaceModalOpen(false)}
+        title="Select or Create Workplace"
+      >
+        <WorkplaceSelectorModal onClose={() => setIsWorkplaceModalOpen(false)} />
+      </Modal>
+    </>
   );
 };
 

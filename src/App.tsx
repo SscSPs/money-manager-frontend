@@ -2,9 +2,8 @@ import './App.css'
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import Login from './components/Login'
 import Home from './components/Home'
-import WorkplaceManager from './components/WorkplaceManager'
-// import JournalManager from './components/JournalManager' // Remove old import
-import JournalPageLayout from './components/JournalPageLayout' // Import new layout
+// import WorkplaceManager from './components/WorkplaceManager' // Remove this import
+import JournalPageLayout from './components/JournalPageLayout'
 import Navbar from './components/Navbar'
 import { useAuth } from './context/AuthContext'
 
@@ -45,8 +44,8 @@ function App() {
           <Route element={<ProtectedRoute />}>
             {/* Main Route: / - Renders Home */}
             <Route path="/" element={<Home />} />
-            {/* Workplace Management Route */}
-            <Route path="/workplaces" element={<WorkplaceManager />} />
+            {/* Remove WorkplaceManager route */}
+            {/* <Route path="/workplaces" element={<WorkplaceManager />} /> */}
             {/* Update journal route to use JournalPageLayout */}
             <Route path="/journals" element={<JournalPageLayout />} />
             {/* Add other protected routes here */}
