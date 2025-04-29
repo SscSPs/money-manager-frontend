@@ -1,39 +1,36 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { apiLogin } from '../services/api';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setIsLoading(true);
     console.log('Attempting login with:', username);
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
+      const data = await apiLogin({ username, password });
 
-      const data = await response.json();
-
-      if (response.ok && data.token) {
+      if (data.token) {
         login(data.token);
         console.log('Login successful');
         navigate('/', { replace: true });
       } else {
-        const errorMessage = data.message || `Login failed with status: ${response.status}`;
-        console.error('Login failed:', errorMessage);
-        setError(errorMessage);
+        setError('Login failed: No token received.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login error:', err);
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
+      setError(err.message || 'An unexpected error occurred during login.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,6 +46,7 @@ const Login: React.FC = () => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
+          disabled={isLoading}
         />
       </div>
       <div>
@@ -59,9 +57,12 @@ const Login: React.FC = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          disabled={isLoading}
         />
       </div>
-      <button type="submit">Login</button>
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Logging in...' : 'Login'}
+      </button>
     </form>
   );
 };
